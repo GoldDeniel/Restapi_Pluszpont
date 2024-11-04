@@ -41,11 +41,11 @@ function deleteItem(id) {
 }
 
 function displayEditForm(id) {
-  const item = todos.find(item => item.id === id);
+  const item = todos.find(item => item.Id === id);
   
-  document.getElementById('edit-name').value = item.name;
-  document.getElementById('edit-id').value = item.id;
-  document.getElementById('edit-isComplete').checked = item.isComplete;
+  document.getElementById('edit-name').value = item.Name;
+  document.getElementById('edit-id').value = item.Id;
+  document.getElementById('edit-isComplete').checked = item.IsComplete;
   document.getElementById('editForm').style.display = 'block';
 }
 
@@ -55,6 +55,7 @@ function updateItem() {
     id: parseInt(itemId, 10),
     isComplete: document.getElementById('edit-isComplete').checked,
     name: document.getElementById('edit-name').value.trim()
+    // nem teljesen ertem, hogy akkor ez most itt megis miert updateli, ha amott meg case sensitive
   };
 
   fetch(`${uri}/${itemId}`, {

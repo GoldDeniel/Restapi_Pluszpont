@@ -5,6 +5,16 @@ using Restapi_Pluszpont.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(
@@ -23,6 +33,7 @@ builder.Services.AddSingleton<BooksService>();
 
 
 var app = builder.Build();
+app.UseCors("AllowAllOrigins"); // Apply the CORS policy
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
