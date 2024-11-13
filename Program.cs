@@ -4,7 +4,6 @@ using Restapi_Pluszpont.Models;
 using Restapi_Pluszpont.Services;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -27,15 +26,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<BookStoreDatabaseSettings>(
-    builder.Configuration.GetSection("BookStoreDatabase"));
+builder.Configuration.GetSection("BookStoreDatabase"));
 builder.Services.AddSingleton<BooksService>();
+
+builder.Services.Configure<UserDatabaseSettings>(builder.Configuration.GetSection("UserDatabase"));
+builder.Services.AddSingleton<Restapi_Pluszpont.Services.UserService>();
 
 
 
 var app = builder.Build();
-app.UseCors("AllowAllOrigins"); // Apply the CORS policy
+app.UseCors("AllowAllOrigins"); 
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -1,0 +1,21 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Restapi_Pluszpont.Models;
+using Restapi_Pluszpont.Services;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace Restapi_Pluszpont.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AddFriendController : ControllerBase
+    {
+        private readonly UserService _userService;
+        public UserController(UserService userService)
+        {
+            _userService = userService;
+        }
+        
+    }
+}
