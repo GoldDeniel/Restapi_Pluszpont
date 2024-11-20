@@ -32,6 +32,9 @@ builder.Services.AddSingleton<BooksService>();
 builder.Services.Configure<UserDatabaseSettings>(builder.Configuration.GetSection("UserDatabase"));
 builder.Services.AddSingleton<Restapi_Pluszpont.Services.UserService>();
 
+builder.Services.Configure<BetterUserDatabaseSettings>(builder.Configuration.GetSection("BetterUserDatabase"));
+builder.Services.AddSingleton<Restapi_Pluszpont.Services.BetterUserService>();
+
 
 
 var app = builder.Build();

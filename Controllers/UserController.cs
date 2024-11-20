@@ -122,7 +122,7 @@ namespace Restapi_Pluszpont.Controllers
         }
         [HttpGet]
         [Route("friends/{id}")]
-        public async Task<ActionResult<List<User>>> GetFriends(string id)
+        public async Task<ActionResult<List<BetterUser>>> GetFriends(string id)
         {
             var user = await _userService.GetAsync(id);
 
