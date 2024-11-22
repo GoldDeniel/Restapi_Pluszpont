@@ -4,7 +4,7 @@ using Restapi_Pluszpont.Models;
 using Restapi_Pluszpont.Services;
 using System.Security.Cryptography;
 using System.Text;
-
+using MongoDB.Bson;
 
 namespace Restapi_Pluszpont.Controllers
 {
@@ -87,16 +87,16 @@ namespace Restapi_Pluszpont.Controllers
                 return NotFound("BetterUser not found");
             }
 
-            // var hashedSecret = HashSecret(BetterUserLogin.Secret);
-            // if (BetterUser.Secret != hashedSecret)
-            // {
-            //     return Unauthorized("Invalid secret");
-            // }
-
-            if (BetterUser.Secret != BetterUserLogin.Secret)
+            var hashedSecret = HashSecret(BetterUserLogin.Secret);
+            if (BetterUser.Secret != hashedSecret)
             {
                 return Unauthorized("Invalid secret");
             }
+
+            // if (BetterUser.Secret != BetterUserLogin.Secret)
+            // {
+            //     return Unauthorized("Invalid secret");
+            // }
 
             return Ok(BetterUser);
         }
@@ -105,7 +105,6 @@ namespace Restapi_Pluszpont.Controllers
         public async Task<IActionResult> Register(BetterUser BetterUser)
         {
             //BetterUser.Secret = HashSecret(BetterUser.Secret!);
-            
             if (BetterUser.Name == null)
             {
                 return BadRequest("Name is required");
@@ -116,7 +115,6 @@ namespace Restapi_Pluszpont.Controllers
                 return BadRequest("Secret is required");
             }
 
-           
             var BetterUsers = await _BetterUserService.GetAsync();
             var existingBetterUser = BetterUsers.FirstOrDefault(u => u.Name == BetterUser.Name);
             
@@ -124,6 +122,8 @@ namespace Restapi_Pluszpont.Controllers
             {
                 return Conflict("User already exists");
             }
+
+            BetterUser.Secret = HashSecret(BetterUser.Secret);
 
             await _BetterUserService.CreateAsync(BetterUser);
 
@@ -143,10 +143,54 @@ namespace Restapi_Pluszpont.Controllers
 
             return Ok(BetterUser.FriendIds);
         }
+
+        [HttpGet]
+        [Route("friends/{id}")]
+        public async Task<ActionResult<List<BetterUser>>> GetFriends(string id)
+        {
+            var BetterUser = await _BetterUserService.GetAsync(id);
+
+            if (BetterUser == null)
+            {
+                return NotFound();
+            }
+
+            var friends = new List<BetterUser>();
+
+            if (BetterUser.FriendIds != null)
+            {
+                foreach (var friendId in BetterUser.FriendIds)
+                {
+                    var friend = await _BetterUserService.GetAsync(friendId);
+                    if (friend != null)
+                    {
+                        friends.Add(friend);
+                    }
+                }
+            }
+
+            return Ok(friends);
+        }
+
         [HttpPost]
         [Route("addfriend/{id}/{friendId}")]
         public async Task<IActionResult> AddFriend(string id, string friendId)
         {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(friendId)) // valamiert sosem fut le, akkor sem, ha null-t adok at
+            {
+                return BadRequest("Id and friendId are required");
+            }
+            
+            if (!ObjectId.TryParse(id, out _) || !ObjectId.TryParse(friendId, out _))
+            {
+                return BadRequest("Id and friendId must be valid 24 digit hex strings");
+            }
+
+            if (id == friendId)
+            {
+                return BadRequest("You cannot add yourself as a friend");
+            }
+
             var user = await _BetterUserService.GetAsync(id);
             var friend = await _BetterUserService.GetAsync(friendId);
 
@@ -179,6 +223,16 @@ namespace Restapi_Pluszpont.Controllers
         [Route("removefriend/{id}/{friendId}")]
         public async Task<IActionResult> RemoveFriend(string id, string friendId)
         {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(friendId)) // valamiert sosem fut le, akkor sem, ha null-t adok at
+            {
+                return BadRequest("Id and friendId are required");
+            }
+            
+            if (!ObjectId.TryParse(id, out _) || !ObjectId.TryParse(friendId, out _))
+            {
+                return BadRequest("Id and friendId must be valid 24 digit hex strings");
+            }
+
             var user = await _BetterUserService.GetAsync(id);
 
             if (user == null)
